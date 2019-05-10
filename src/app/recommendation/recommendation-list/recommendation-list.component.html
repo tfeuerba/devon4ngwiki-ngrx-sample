@@ -1,0 +1,20 @@
+<h2>Recommended Movies</h2>
+<span *ngIf="loading$ | async">Loading recommendations...</span>
+
+<table *ngIf="(movies$ | async).length">
+  <tr>
+    <th>Title</th>
+    <th>Genre</th>
+    <th>Release Year</th>
+    <th>Runtime</th>
+    <th>Action</th>
+  </tr>
+  <tr *ngFor="let movie of movies$ | async">
+    <td>{{movie.title}}</td>
+    <td>{{movie.genre}}</td>
+    <td>{{movie.releaseYear}}</td>
+    <td>{{movie.runtimeMinutes}} min.</td>
+    <td><button (click)="addToWatchlist(movie)">Add to Watchlist</button></td>
+  </tr>
+
+</table>

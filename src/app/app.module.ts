@@ -9,6 +9,7 @@ import { reducers, metaReducers } from './reducers';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import { WatchlistModule } from './watchlist/watchlist.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @NgModule({
   declarations: [
@@ -17,13 +18,10 @@ import { WatchlistModule } from './watchlist/watchlist.module';
   imports: [
     BrowserModule,
     WatchlistModule,
+    RecommendationModule,
     StoreModule.forRoot(reducers, { metaReducers }),
-    // Instrumentation must be imported after importing StoreModule (config is optional)
-    StoreDevtoolsModule.instrument({
-      maxAge: 25, // Retains last 25 states
-      logOnly: environment.production, // Restrict extension to log-only mode
-    }),
-    !environment.production ? StoreDevtoolsModule.instrument() : []
+    StoreDevtoolsModule.instrument({}),
+    EffectsModule.forRoot([]),
   ],
   providers: [],
   bootstrap: [AppComponent]

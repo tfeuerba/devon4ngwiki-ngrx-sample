@@ -1,41 +1,49 @@
 import { WatchlistItem } from '../models/movies';
 import * as playbackActions from 'src/app/playback/actions';
+import * as recommendationActions from 'src/app/recommendation/actions';
 import { produce } from 'immer';
+import { EntityState, createEntityAdapter } from '@ngrx/entity'
 
-export interface State {
-  items: WatchlistItem[];
+export interface State extends EntityState<WatchlistItem> {
 }
 
-export const initialState: State = {
-  items: [
-    {
-      id: 42,
-      movie: {
-        id: 1,
-        title: 'Die Hard',
-        genre: 'action',
-        releaseYear: 1988,
-        runtimeMinutes: 132
-      },
-      playbackMinutes: 0,
-      added: new Date(),
-    }
-  ]
-};
+export const entityAdapter = createEntityAdapter<WatchlistItem>();
 
-export function reducer(state = initialState, action: playbackActions.ActionsUnion): State {
+export const initialState: State = entityAdapter.getInitialState();
+
+const entitySelectors = entityAdapter.getSelectors();
+
+export function reducer(state = initialState, action: playbackActions.ActionsUnion | recommendationActions.ActionsUnion): State {
   switch (action.type) {
+    // VERSION with @ngrx/entity
     case playbackActions.playbackFinished.type:
-      return produce(state, draft => {
-        const itemToUpdate = draft.items.find(item => item.movie.id === action.movieId);
-        if (itemToUpdate) {
-          itemToUpdate.playbackMinutes = action.stoppedAtMinute;
-        }
-      });
-      // return {
-      //   ...state,
-      //   items: state.items.map(updatePlaybackMinutesMapper(action.movieId, action.stoppedAtMinute))
-      // };
+      const itemToUpdate = entitySelectors.selectAll(state).find(item => item.movie.id === action.movieId);
+      if (itemToUpdate) {
+        return entityAdapter.updateOne({
+          id: itemToUpdate.id,
+          changes: { playbackMinutes: action.stoppedAtMinute }
+        }, state);
+      } else {
+        return state;
+      }
+
+    case recommendationActions.addToWatchlist.type:
+      return entityAdapter.addOne({id: action.watchlistItemId, movie: action.movie, added: action.addedAt, playbackMinutes: 0}, state);
+
+    // VERSION with immer
+    // case playbackActions.playbackFinished.type:
+    //   return produce(state, draft => {
+    //     const itemToUpdate = draft.items.find(item => item.movie.id === action.movieId);
+    //     if (itemToUpdate) {
+    //       itemToUpdate.playbackMinutes = action.stoppedAtMinute;
+    //     }
+    //   });
+
+    // VERSION with immutable mapping
+    // return {
+    //   ...state,
+    //   items: state.items.map(updatePlaybackMinutesMapper(action.movieId, action.stoppedAtMinute))
+    // };
 
     default:
       return state;
@@ -55,4 +63,4 @@ export function reducer(state = initialState, action: playbackActions.ActionsUni
 //   };
 // }
 
-export const getAllItems = (state: State) => state.items;
+export const getAllItems = entitySelectors.selectAll;

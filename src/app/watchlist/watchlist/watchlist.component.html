@@ -1,3 +1,4 @@
+<h1>Watchlist</h1>
 <ul>
     <li *ngFor="let item of watchlistItems$ | async">{{item.movie.title}} ({{item.movie.releaseYear}}): {{item.playbackMinutes}}/{{item.movie.runtimeMinutes}} min watched <button (click)="stoppedPlayback(item.movie.id, item.playbackMinutes + 10)">Add 10 Minutes</button></li>
 </ul>
